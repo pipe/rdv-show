@@ -19,7 +19,6 @@ function gotStreamFromRemote(stream,kind) {
     $("#status").text("Call connected. Tap video to enlarge");
 
     console.log("got new stream" + stream + " kind =" + kind);
-    $("#them").show();
     var them = document.getElementById("them");
     them.srcObject = stream;
     them.onloadedmetadata = function(e) {
@@ -42,10 +41,13 @@ function setupAV() {
             .then((stream) => {
                 console.log("add local stream");
                 stream.getTracks().forEach(track => {
+                    var them = document.getElementById("them");
+                    them.srcObject = stream;
                     pc.addTrack(track, stream);
                     console.log("added local track ", track.id, track.kind);
                     if (track.kind === "video") {
                         setCodecOrder(pc, track);
+                        $("#them").show();
                     }
                 });
                 resolve(false);
