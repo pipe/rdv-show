@@ -54,7 +54,47 @@ function sendAndRetryMessage(to,from,type,data, statusText ){
         $("#status").text(lstatusText);
     },5000);
 }
+function codecPriority(codecMime){
+    var ret = 2;
+    if (codecMime.includes("h264") || codecMime.includes("H264")){
+        ret = 1;
+    } else if (codecMime.includes("h265") || codecMime.includes("H265")){
+        ret =0;
+    }
+    return ret;
+}
 
+function tweakOpus(send) {
+        const paras = send.getParameters();
+        console.log("initial audio encoder params");
+        console.log(paras);
+        if ((paras) && (paras.encodings)) {
+            paras.encodings[0].maxBitrate = 64000;
+            paras.encodings[0].ptime = 60;
+            send.setParameters(paras);
+            console.log(paras);
+        }
+
+}
+function setCodecOrder(pc,track){
+        if (RTCRtpSender.getCapabilities) {
+            const {codecs} = RTCRtpSender.getCapabilities('video');
+            console.log("default video codecs ");
+            codecs.forEach((v) => {
+                console.log(v.mimeType);
+            })
+            codecs.sort((a, b) => codecPriority(a.mimeType) - codecPriority(b.mimeType));
+            console.log("ordered video codecs ")
+            codecs.forEach((v) => {
+                console.log(v.mimeType);
+            })
+            const transceiver = pc.getTransceivers().find(t => t.sender && t.sender.track === track);
+            transceiver.setCodecPreferences(codecs);
+            console.log('Flipped  video codec');
+        } else {
+            console.log('Default  video codecs');
+        }
+}
 function loadProps() {
     var that = {configUrl: "pipeconfig.json"};
     var promise = new Promise(function (resolve, reject) {

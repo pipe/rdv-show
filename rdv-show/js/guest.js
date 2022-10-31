@@ -19,6 +19,7 @@ function gotStreamFromRemote(stream,kind) {
     $("#status").text("Call connected. Tap video to enlarge");
 
     console.log("got new stream" + stream + " kind =" + kind);
+    $("#them").show();
     var them = document.getElementById("them");
     them.srcObject = stream;
     them.onloadedmetadata = function(e) {
@@ -30,23 +31,23 @@ function gotStreamFromRemote(stream,kind) {
     }
 }
 function setupAV() {
-    var gumConstraints = {audio: true, video: true};
-
+    var gumConstraints = {audio: true, video: { facingMode: "user" }};
+    const supported = navigator.mediaDevices.getSupportedConstraints().aspectRatio;
+    if (supported){
+        console.log("attempting portrait constraint");
+        gumConstraints.video.aspectRatio = 9.0/16.0;
+    }
     var promise = new Promise(function (resolve, reject) {
         navigator.mediaDevices.getUserMedia(gumConstraints)
             .then((stream) => {
                 console.log("add local stream");
-                var me = document.getElementById("me");
-                me.srcObject = stream;
-                if (pc.addTrack) {
-                    stream.getTracks().forEach(track => {
-                        pc.addTrack(track, stream);
-                        console.log("added local track ", track.id, track.kind);
-                    });
-                } else {
-                    pc.addStream(stream);
-                    console.log("added local stream");
-                }
+                stream.getTracks().forEach(track => {
+                    pc.addTrack(track, stream);
+                    console.log("added local track ", track.id, track.kind);
+                    if (track.kind === "video") {
+                        setCodecOrder(pc, track);
+                    }
+                });
                 resolve(false);
             })
             .catch((e) => {
@@ -55,7 +56,6 @@ function setupAV() {
             });
     });
     return promise;
-
 }
 
 // configure local peerconnection and handlers
