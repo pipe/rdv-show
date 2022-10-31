@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <title>RDV-Show (guest)</title>
+</head>
+<body>
+<script src="js/jquery-3.6.0.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" crossorigin="anonymous"></script>
+<script src="js/bootstrap.js"></script>
+<script src="js/guest.js"></script>
+<script src="js/common.js"></script>
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col align-self-start">
+                <button id="stopCall" type="button" class="btn  btn-lg"><i id="stopIcon" class="fa fa-stop fa-2x" aria-hidden="true"></i></button>
+                <button id="mute" type="button" class="btn  btn-lg"><i id="muteIcon" class="fa fa-microphone fa-2x" aria-hidden="true"></i></button>
+            </div>
+            <div class="col align-self-start">
+                <a href="guest.html"><h1 id="title" >RDV-Show</h1></a>
+            </div>
+            <div class="col align-self-end">
+                <button id="fullScreen" type="button" class="btn  btn-lg"><i id="fullIcon" class="fa fa-arrows-alt fa-2x" aria-hidden="true"></i></button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div  id="vscreen">
+            <video class="card-img img-fluid" id="them" playsinline autoplay muted >
+            </video>
+            <video class="card-img img-fluid mirrored" id="me" playsinline autoplay muted >
+            </video>
+        </div>
+        <div>Duration <span class="badge badge-error" id="duration"></span></div>
+        <div class="row">
+            <h2><span class="badge badge-primary" id="role"></span></h2>
+            <h2><span class="badge badge-primary" id="status"></span></h2>
+        </div>
+    </div>
+</div>
+
+<div id="share" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send this url to the guest. </h5>
+            </div>
+            <div class="modal-body" id="shareQR">
+                <p>Share this web page using your phone's 'share' menu item at the top of the screen</p>
+                <p>Then come back to this screen and click the 'done' button.</p>
+                <p>You'll also need to permit access to your camera and microphone</p>
+            </div>
+            <div class="modal-footer">
+                <button id="shareDone" type="button" class="btn btn-secondary" data-dismiss="modal" onclick="shared();">Done</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="accept" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Accept a call</h5>
+            </div>
+            <div class="modal-body">
+                <p>Click 'accept' to start the call.</p>
+                <p>You'll also need to permit access to your camera and microphone</p>
+            </div>
+            <div class="modal-footer">
+                <button id="callAccept" type="button" class="btn btn-secondary" data-dismiss="modal" onclick="accepted();">Accept</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="nowebrtc" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sorry</h5>
+            </div>
+            <div class="modal-body">
+                <p>Unfortunately the browser you are using does not support WebRTC video calls.</p>
+                <p>Please retry using Safari, Chrome, FireFox, Edge - or pretty much any mainstream browser.</p>
+                <p>You can probably do this with a 'share with' or 'open in' menu item.</p>
+            </div>
+            <div class="modal-footer">
+                <button id="sadder" type="button" class="btn btn-secondary" data-dismiss="modal" >Accept</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="facebookapp" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sorry</h5>
+            </div>
+            <div class="modal-body">
+                <p>Unfortunately the Facebook apps block webRTC.</p>
+                <p>Please try hosting the call with Chrome or FireFox or Edge.</p>
+                <p>Go to <pre>https://pipe.github.io/two</pre> outside the Facebook or instagram app.</p>
+                <p>You can do this from the three dot menu on the top right of your screen.</p>
+                <p>Your guest can use any modern browser e.g. Chrome or FireFox or Edge or Safari</p>
+            </div>
+            <div class="modal-footer">
+                <button id="sad" type="button" class="btn btn-secondary" data-dismiss="modal" >Accept</button>
+            </div>
+        </div>
+    </div>
+</div>
+<footer><span>See our <a href="https://github.com/pipe/rdv-show">Github</a> for source code</span>
+    <span>See also <a href="https://rendezvous.berlin/privacy-policy.html">Privacy</a>
+       and <a href="https://pi.pe/Impressum/index.html">Impressum</a></span>
+    <span onclick="test()" >test</span>
+</footer>
+</body>
+</html>
