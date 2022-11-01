@@ -2,6 +2,12 @@ var mid;
 var properties;
 var socket;
 var peerConnectionOfferAnswerCriteria =  {offerToReceiveAudio: true, offerToReceiveVideo: true };
+var gumConstraints = {audio: true, video: { facingMode: "user" }};
+const supported = navigator.mediaDevices.getSupportedConstraints().aspectRatio;
+if (supported){
+    console.log("attempting portrait constraint");
+    gumConstraints.video.aspectRatio = 9.0/16.0;
+}
 
 function isFacebookApp() {
     var ua = navigator.userAgent || navigator.vendor || window.opera;
@@ -157,6 +163,7 @@ $(document).ready(function () {
     } else {
         if (isWebrtcSupported()) {
             console.log("I see webRTC !");
+            $("#status").text("Waiting for server connection");
             startPipe();
         } else {
             console.log("I don't see webRTC !");

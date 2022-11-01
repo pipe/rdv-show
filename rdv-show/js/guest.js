@@ -30,12 +30,6 @@ function gotStreamFromRemote(stream,kind) {
     }
 }
 function setupAV() {
-    var gumConstraints = {audio: true, video: { facingMode: "user" }};
-    const supported = navigator.mediaDevices.getSupportedConstraints().aspectRatio;
-    if (supported){
-        console.log("attempting portrait constraint");
-        gumConstraints.video.aspectRatio = 9.0/16.0;
-    }
     var promise = new Promise(function (resolve, reject) {
         navigator.mediaDevices.getUserMedia(gumConstraints)
             .then((stream) => {
