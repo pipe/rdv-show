@@ -19,6 +19,23 @@ async function startUX(){
     cropVideo = await CropTarget.fromElement(remotes);
     console.log("got crop Target");
     $("#share").modal('show');
+    const me = document.getElementById("me");
+    window.setInterval( ()=> {
+        var max =0.1;
+        var selected = me;
+
+        Object.entries(sessions).forEach(sessionkva => {
+            var session  = sessionkva[1];
+            session.calcAudioLevel();
+            var level =  session.getAudioLevel();
+            if (level > max){
+                selected = session.getVideo();
+                max = level;
+            }
+            console.log("audio level is " +level);
+        });
+        slideTo(selected);
+    },1000);
 }
 
 async function setupMCU() {
@@ -99,6 +116,22 @@ function setupAV() {
             });
     });
     return promise;
+}
+function slideTo(v){
+    if (v){
+        let citem = v.parentElement;
+        if (!citem.classList.contains("active")){
+            var sibs = citem.parentElement.childNodes;
+            for (sib of sibs){
+                var cl = sib.classList;
+                if (cl){
+                    cl.remove("active");
+                }
+            }
+            citem.classList.add("active");
+            console.log("selecting "+v.id);
+        }
+    }
 }
 
 

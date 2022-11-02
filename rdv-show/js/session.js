@@ -1,8 +1,7 @@
 
-var pans = [ {pan:-0.6,id:"them0"}, {pan:0.6, id:"them1"} ];
+var pots = [ {pan:-0.6,id:"them0"}, {pan:0.6, id:"them1"} ];
 
 function Session(id) {
-    this.checker = null;
     this.lastLoss = 0;
     this.lastRecv = 0;
     this.fid = id;
@@ -13,7 +12,12 @@ function Session(id) {
     this.statusChannel = null;
     this.audio = null;
     this.audioLevel = 0.0;
-    this.pot =  pans.pop();
+    this.lcandyStash = [];
+    this.pot = null;
+    console.log("created session for " + id);
+};
+Session.prototype.setMediaElement = function () {
+    this.pot =  pots.pop();
     if (this.pot) {
         this.pan = this.pot.pan;
     }
@@ -21,21 +25,17 @@ function Session(id) {
         console.log("pan audio to center ...");
         this.pan = 0.0;
     }
-    console.log("created peer connection for " + id);
-    this.lcandyStash = [];
     console.log("pan is " + this.pan);
-    this.rdiv = document.createElement("div");
     if (this.pot) {
         this.video = document.getElementById(this.pot.id);
+        console.log("using carousel video id "+this.video.id);
     } else {
         this.video = document.createElement("video");
         this.video.muted = true;
         this.video.setAttribute("autoplay", "true");
-        //this.rdiv.appendChild(this.audio);
-        //this.rdiv.setAttribute("style", "border-width:medium; border-style:hidden;");
+        console.log("not using carousel video - making a fresh one ");
     }
-};
-
+}
 Session.prototype.offerDeal = function (data) {
     this.setupRTC();
     this.pc.setRemoteDescription(data).then(_ =>
@@ -99,7 +99,10 @@ Session.prototype.stopSession = function () {
             console.log("panned not connected to localdcomp...")
         }
         this.panned = null;
-        pans.push(this.pan);
+    }
+    if (this.pot) {
+        pots.push(this.pot);
+        this.pot = null;
     }
     try {
         if (this.dcomp != null) {
@@ -117,10 +120,7 @@ Session.prototype.stopSession = function () {
     } catch (e) {
         console.log("mixup in disconnects")
     }
-    if (this.checker != null) {
-        window.clearTimeout(this.checker);
-        this.checker = null;
-    }
+
 
     if (this.pc != null) {
         var mpc = this.pc;
@@ -142,17 +142,16 @@ Session.prototype.setupRTC = function () {
     this.pc.onicecandidate = (e) => {
         console.log("local ice candidate", e.candidate);
         if (e.candidate != null) {
-            if (candyProt(e.candidate.candidate).toUpperCase() != "TCP") {
-                if (this.pc.signalingState == 'stable') {
-                    sendMessage(this.fid, mid, "candidate", e.candidate.candidate);
-                } else {
-                    console.log("stashing ice candidate");
-                    this.lcandyStash.push(e.candidate);
-                }
+            if (this.pc.signalingState == 'stable') {
+                sendMessage(this.fid, mid, "candidate", e.candidate.candidate);
             } else {
-                console.log("skip TCP candidates");
+                console.log("stashing ice candidate");
+                this.lcandyStash.push(e.candidate);
             }
         }
+    };
+    this.pc.onnegotiationneeded = (e) =>{
+        console.log("negotiation needed, state is ", this.pc.signalingState);
     };
     this.pc.oniceconnectionstatechange = (e) => {
         console.log("ice state is changed", this.pc.iceConnectionState);
@@ -221,9 +220,19 @@ Session.prototype.addRemoteStream = function (stream, kind) {
     }
     $("#status").text("Call connected to " + Object.keys(sessions).length + " member(s).");
     console.log("got new stream" + stream + " kind =" + kind);
+    if (!this.video){
+        console.log("get a media element/pan etc");
+        this.setMediaElement();
+    }
     if (kind.indexOf("audio") != -1) {
         // inbound....
         this.peerin = myac.createMediaStreamSource(stream);
+        // volume measurement
+        this.analyserNode = myac.createAnalyser();
+        this.peerin.connect(this.analyserNode);
+        this.pcmData = new Float32Array(this.analyserNode.fftSize);
+
+
         this.panned = myac.createStereoPanner();
         this.panned.pan.value = this.pan;
         console.log("panned to " + this.pan);
@@ -283,10 +292,6 @@ Session.prototype.addRemoteStream = function (stream, kind) {
                 console.log("added mcu outbound track ", track.id, track.kind, track.label);
             });
         }
-        var that = this;
-        this.checker = window.setInterval(function () {
-            that.checkLoss();
-        }, 1000);
         // audio together here.
         // depends on role
         console.log('Audio sample Rate is ' + myac.sampleRate);
@@ -296,34 +301,24 @@ Session.prototype.addRemoteStream = function (stream, kind) {
     this.addVstream(stream, kind);
 };
 
+Session.prototype.calcAudioLevel = function(){
+        this.analyserNode.getFloatTimeDomainData(this.pcmData);
+        let sumSquares = 0.0;
+        for (const amplitude of this.pcmData) { sumSquares += amplitude*amplitude; }
+        this.audioLevel = Math.sqrt(sumSquares / this.pcmData.length);
+};
+
+Session.prototype.getAudioLevel = function(){
+    return this.audioLevel;
+};
+
+Session.prototype.getVideo = function(){
+    return this.video;
+};
+
 Session.prototype.addVstream = function (stream) {
     this.video.srcObject = stream;
     this.video.play();
     console.log("added stream to local media object");
 };
 
-Session.prototype.checkLoss = function () {
-    var that = this;
-    if (this.pc) {
-        this.pc.getReceivers()[0].getStats().then(
-            function (rs) {
-                rs.forEach(function (d) {
-                        if (d.type === "inbound-rtp") {
-                            var recvd = d.packetsReceived;
-                            var lost = d.packetsLost;
-                            if (lost > that.lastLoss) {
-                                var diffl = lost - that.lastLoss;
-                                var diffp = recvd - that.lastRecv;
-                            }
-                            that.lastLoss = lost;
-                            that.lastRecv = recvd;
-                        }
-                        if (d.type === "track") {
-                            that.audioLevel = d.audioLevel;
-                            console.log("audio level "+that.fid+" "+ that.audioLevel);
-                        }
-                    }
-                );
-            });
-    }
-}

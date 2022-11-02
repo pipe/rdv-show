@@ -128,7 +128,7 @@ function loadProps() {
 }
 
 async function startPipe(){
-    mid = localStorage['twoId'];
+    mid = localStorage['showId'];
     //var act = $("#action");
     if (!mid) {
         var array = new Uint32Array(8);
@@ -146,7 +146,7 @@ async function startPipe(){
         }
         mid = hexCodes.join("").toLowerCase();
         console.log("mid =", mid);
-        localStorage['twoId'] = mid;
+        localStorage['showId'] = mid;
     }
     properties = await loadProps();
     socket = new WebSocket( properties.wsurl + mid);
