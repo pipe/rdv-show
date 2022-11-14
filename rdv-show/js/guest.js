@@ -2,6 +2,7 @@ var pc;
 var offerSender;
 var cid;
 var startRecTime;
+var remoteStream;
 
 function startUX(){
     cid = getUrlParam("id");
@@ -10,23 +11,21 @@ function startUX(){
     $("#them").hide();
     $("#accept").modal('show');
     setupRTC();
+    remoteStream = new MediaStream();
 }
 // called when webRTC presents us with a fresh remote audio/video stream
-function gotStreamFromRemote(stream,kind) {
-    if (!kind) {
-        kind = "audio/video";
-    }
-    $("#status").text("Call connected. Tap video to enlarge");
-
-    console.log("got new stream" + stream + " kind =" + kind);
-    var them = document.getElementById("them");
-    them.srcObject = stream;
-    them.onloadedmetadata = function(e) {
-        them.play();
-        them.muted = false;
-    };
-    if (kind ==="video") {
-        startRecTime = Date.now();
+function gotTrackFromRemote(rtrack) {
+    console.log("got new track,  kind =" + rtrack.kind);
+    remoteStream.addTrack(rtrack);
+    if (remoteStream.getTracks().length === 2) {
+        var them = document.getElementById("them");
+        them.srcObject = remoteStream;
+        them.onloadedmetadata = function (e) {
+            them.play();
+            them.muted = false;
+            startRecTime = Date.now();
+            $("#status").text("Call connected. Tap video to enlarge");
+        };
     }
 }
 function setupAV() {
@@ -93,9 +92,8 @@ function setupRTC(){
     // specification of WEBRTC is in flux - so we test to see if ontrack callback exists
         // if so we use it
         pc.ontrack = (event) => {
-            var stream = event.streams[0];
             console.log("got remote track ", event.track.kind);
-            gotStreamFromRemote(stream,event.track.kind);
+            gotTrackFromRemote(event.track);
         };
 
 
