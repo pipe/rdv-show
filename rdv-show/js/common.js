@@ -7,6 +7,8 @@ const supported = navigator.mediaDevices.getSupportedConstraints().aspectRatio;
 if (supported){
     console.log("attempting portrait constraint");
     gumConstraints.video.aspectRatio = 9.0/16.0;
+} else {
+    console.log("failed to set portrait constraint");
 }
 
 function isFacebookApp() {

@@ -21,18 +21,19 @@ async function startUX(){
     $("#share").modal('show');
     const me = document.getElementById("me");
     window.setInterval( ()=> {
-        var max =0.1;
+        var max =0.01;
         var selected = me;
 
         Object.entries(sessions).forEach(sessionkva => {
             var session  = sessionkva[1];
             session.calcAudioLevel();
             var level =  session.getAudioLevel();
+            var video = session.getVideo();
             if (level > max){
-                selected = session.getVideo();
+                selected = video;
                 max = level;
             }
-            console.log("audio level is " +level);
+            console.log("audio level is " +level+" "+video.id);
         });
         slideTo(selected);
     },1000);
@@ -118,6 +119,7 @@ function setupAV() {
     return promise;
 }
 function slideTo(v){
+    console.log("slide to" + v);
     if (v){
         let citem = v.parentElement;
         if (!citem.classList.contains("active")){
