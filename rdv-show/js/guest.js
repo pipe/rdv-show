@@ -40,7 +40,7 @@ function setupAV() {
                     pc.addTrack(track, stream);
                     console.log("added local track ", track.id, track.kind);
                     if (track.kind === "video") {
-                        setCodecOrder(pc, track);
+//                        setCodecOrder(pc, track);
                         $("#them").show();
                     }
                 });

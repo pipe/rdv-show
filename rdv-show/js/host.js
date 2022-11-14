@@ -21,7 +21,7 @@ async function startUX(){
     $("#share").modal('show');
     const me = document.getElementById("me");
     window.setInterval( ()=> {
-        var max =0.01;
+        var max =0.001;
         var selected = me;
 
         Object.entries(sessions).forEach(sessionkva => {
@@ -36,7 +36,7 @@ async function startUX(){
             console.log("audio level is " +level+" "+video.id);
         });
         slideTo(selected);
-    },1000);
+    },500);
 }
 
 async function setupMCU() {
@@ -119,7 +119,6 @@ function setupAV() {
     return promise;
 }
 function slideTo(v){
-    console.log("slide to" + v);
     if (v){
         let citem = v.parentElement;
         if (!citem.classList.contains("active")){
