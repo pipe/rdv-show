@@ -1,6 +1,5 @@
 var cid;
 var startRecTime;
-var localStream;
 var sessions = {};
 var myac;
 var initiator;
@@ -8,6 +7,8 @@ var localdcomp;
 var localpanned;
 var mcu;
 var cropVideo;
+var nmap = {them0:0,me:1,them1:2};
+
 
 
 async function startUX(){
@@ -102,11 +103,14 @@ function setupAV() {
         navigator.mediaDevices.getUserMedia(gumConstraints)
             .then((stream) => {
                 console.log("add local stream");
-                localStream = stream;
                 stream.getTracks().forEach(track => {
                     if (track.kind === "video") {
                         var me = document.getElementById("me");
                         me.srcObject = stream;
+                    }
+                    if (track.kind === "audio") {
+                        localpanned = myac.createMediaStreamSource(stream);
+                        // not actually panned...
                     }
                 });
                 resolve(false);
@@ -120,18 +124,9 @@ function setupAV() {
 }
 function slideTo(v){
     if (v){
-        let citem = v.parentElement;
-        if (!citem.classList.contains("active")){
-            var sibs = citem.parentElement.childNodes;
-            for (sib of sibs){
-                var cl = sib.classList;
-                if (cl){
-                    cl.remove("active");
-                }
-            }
-            citem.classList.add("active");
-            console.log("selecting "+v.id);
-        }
+        var slideNo = nmap[v.id];
+        $('#mcu').carousel(slideNo);
+        console.log("selecting "+v.id);
     }
 }
 
