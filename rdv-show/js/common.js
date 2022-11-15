@@ -6,7 +6,12 @@ var gumConstraints = {audio: true, video: { facingMode: "user" }};
 const supported = navigator.mediaDevices.getSupportedConstraints().aspectRatio;
 if (supported){
     console.log("attempting portrait constraint");
-    gumConstraints.video.aspectRatio = (window.innerWidth > window.innerHeight)? (16./9.0):(9.0/16.0);
+    if ((window.orientation) &&
+        ((window.orientation === -90) || (window.orientation === 90))){
+        gumConstraints.video.aspectRatio =  (16./9.0);
+    } else {
+        gumConstraints.video.aspectRatio = (9.0/16.0);
+    }
 } else {
     console.log("failed to set portrait constraint");
 }
