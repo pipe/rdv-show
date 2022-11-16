@@ -53,6 +53,11 @@ async function setupMCU() {
     } else {
         console.log("No cropTarget or cropTo")
     }
+    var act = document.getElementById("stopCall");
+    act.onclick =  stopCall;
+    window.onbeforeunload = function() {
+        return  "If you leave this page you will end the call.";
+    }
 }
 async function shared() {
     await setupAV();
@@ -109,6 +114,7 @@ function setupAV() {
                         me.srcObject = stream;
                     }
                     if (track.kind === "audio") {
+                        localStream = stream;
                         localpanned = myac.createMediaStreamSource(stream);
                         // not actually panned...
                     }

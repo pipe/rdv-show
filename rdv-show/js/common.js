@@ -1,16 +1,21 @@
 var mid;
 var properties;
 var socket;
+var localStream;
+var mute = false;
 var peerConnectionOfferAnswerCriteria =  {offerToReceiveAudio: true, offerToReceiveVideo: true };
 var gumConstraints = {audio: true, video: { facingMode: "user" }};
 const supported = navigator.mediaDevices.getSupportedConstraints().aspectRatio;
 if (supported){
     console.log("attempting portrait constraint");
-    if ((window.orientation) &&
-        ((window.orientation === -90) || (window.orientation === 90))){
-        gumConstraints.video.aspectRatio =  (9.0/16.0);
+    if (window.orientation){
+        if ((window.orientation === -90) || (window.orientation === 90)) {
+            gumConstraints.video.aspectRatio = (9.0 / 16.0);
+        }else {
+            gumConstraints.video.aspectRatio = (16.0 / 9.0);
+        }
     } else {
-        gumConstraints.video.aspectRatio = (16.0/9.0);
+        gumConstraints.video.aspectRatio = (9.0/16.0);
     }
 } else {
     console.log("failed to set portrait constraint");
@@ -53,6 +58,28 @@ function sendMessage(to,from,type,data){
     } else {
         console.log("not sending \n"+ message+ "\n because websocket readyState ="+socket.readyState);
         $("#status").text("Server Problem?");
+    }
+}
+
+function stopCall() {
+    var dur = Date.now() - startRecTime;
+    $("#status").text("Call ended.");
+    window.location = "thanks.html?dur=" + dur;
+}
+
+function setMute(m){
+    var mi = $("#muteIcon");
+    mute = m;
+    if (m){
+        mi.removeClass("fa-microphone");
+        mi.addClass("fa-microphone-slash");
+    } else {
+        mi.removeClass("fa-microphone-slash");
+        mi.addClass("fa-microphone");
+    }
+    var audioTracks = localStream.getAudioTracks();
+    if (audioTracks[0]) {
+        audioTracks[0].enabled = !m;
     }
 }
 
@@ -151,7 +178,7 @@ async function startPipe(){
             var paddedValue = (padding + stringValue).slice(-padding.length)
             hexCodes.push(paddedValue);
         }
-        mid = hexCodes.join("").toLowerCase();
+        mid = hexCodes.join("").toUpperCase();
         console.log("mid =", mid);
         localStorage['showId'] = mid;
     }
@@ -172,6 +199,7 @@ $(document).ready(function () {
             console.log("I see webRTC !");
             $("#status").text("Waiting for server connection");
             startPipe();
+            $("#mute").click(_ => setMute(!mute));
         } else {
             console.log("I don't see webRTC !");
             $("#status").text("Dont have webRTC available ");

@@ -305,7 +305,8 @@ Session.prototype.calcAudioLevel = function(){
         this.analyserNode.getFloatTimeDomainData(this.pcmData);
         let sumSquares = 0.0;
         for (const amplitude of this.pcmData) { sumSquares += amplitude*amplitude; }
-        this.audioLevel = Math.sqrt(sumSquares / this.pcmData.length);
+        let na= Math.sqrt(sumSquares / this.pcmData.length);
+        this.audioLevel = (this.audioLevel /2) + na ;
 };
 
 Session.prototype.getAudioLevel = function(){

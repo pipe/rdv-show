@@ -32,15 +32,17 @@ function setupAV() {
     var promise = new Promise(function (resolve, reject) {
         navigator.mediaDevices.getUserMedia(gumConstraints)
             .then((stream) => {
-                console.log("add local stream");
+                console.log("add local stream ");
                 stream.getTracks().forEach(track => {
                     var them = document.getElementById("them");
                     them.srcObject = stream;
                     pc.addTrack(track, stream);
                     console.log("added local track ", track.id, track.kind);
                     if (track.kind === "video") {
-//                        setCodecOrder(pc, track);
+                        setCodecOrder(pc, track);
                         $("#them").show();
+                    } else {
+                        localStream = stream; // for mute
                     }
                 });
                 resolve(false);
@@ -86,6 +88,11 @@ function setupRTC(){
             stopCall();
         }
         if (pc.iceConnectionState === "connected"){
+            var act = document.getElementById("stopCall");
+            act.onclick =  stopCall ;
+            window.onbeforeunload = function() {
+                return pc.iceConnectionState=="connected" ? "If you leave this page you will end the call." : null;
+            }
             socket.close();
         }
     };
