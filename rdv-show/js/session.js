@@ -38,13 +38,14 @@ Session.prototype.setMediaElement = function () {
 }
 Session.prototype.offerDeal = function (data) {
     this.setupRTC();
-    this.pc.setRemoteDescription(data).then(_ =>
+    this.pc.setRemoteDescription(data).then(_ =>{
+        this.setOutboundTracks();
         this.pc.createAnswer(peerConnectionOfferAnswerCriteria).then(ans => {
             //ans.sdp = tweakSDP(ans.sdp);
             this.pc.setLocalDescription(ans).then(_ =>
                 sendMessage(this.fid, mid, "answer", ans.sdp)
             )
-        })
+        });}
     ).catch((e) => console.log("set Remote offer error", e));
 };
 Session.prototype.candidateDeal = function (data) {
@@ -214,7 +215,53 @@ Session.prototype.setupRTC = function () {
         }
     };
 };
+Session.prototype.setOutboundTracks = function () {
+    // audio
+    // outbound
+    // for now just add the localpanned stream
+
+    this.dcomp = myac.createDynamicsCompressor();
+    if (localpanned) {
+        localpanned.connect(this.dcomp);
+        console.log("connect local stream to dcomp");
+    }
+
+    this.peerout = myac.createMediaStreamDestination();
+    this.dcomp.connect(this.peerout);
+    var pc = this.pc;
+    var pstream = this.peerout.stream;
+
+    pstream.getTracks().forEach(track => {
+        pc.addTrack(track, pstream);
+        console.log("added panned outbound track ", track.id, track.kind, track.label);
+    });
+
+    var that = this;
+    Object.entries(sessions).forEach(sessionkva => {
+        var id = sessionkva[0];
+        if (id != this.fid) {
+            var session = sessionkva[1];
+            if (that.dcomp && session.panned) {
+                session.panned.connect(that.dcomp); // I hear them
+            }
+        }
+    });
+
+    // and video
+    if (mcu) {
+        mcu.getTracks().forEach(track => {
+            pc.addTrack(track, mcu);
+            if (track.kind === "video") {
+                setCodecOrder(pc, track);
+            }
+            console.log("added mcu outbound track ", track.id, track.kind, track.label);
+        });
+    }
+
+};
 Session.prototype.addRemoteStream = function (stream, kind) {
+
+    // deal with an inbound stream
     if (!kind) {
         kind = "audio/video";
     }
@@ -249,16 +296,6 @@ Session.prototype.addRemoteStream = function (stream, kind) {
         }
 
         var that = this;
-
-        // outbound
-        // for now just add the localpanned stream
-
-        this.dcomp = myac.createDynamicsCompressor();
-        if (localpanned) {
-            localpanned.connect(this.dcomp);
-            console.log("connect local stream to dcomp");
-        }
-
         Object.entries(sessions).forEach(sessionkva => {
             var id = sessionkva[0];
             if (id != this.fid) {
@@ -266,47 +303,24 @@ Session.prototype.addRemoteStream = function (stream, kind) {
                 if (that.panned && session.dcomp) {
                     that.panned.connect(session.dcomp); // they hear me
                 }
-                if (that.dcomp && session.panned) {
-                    session.panned.connect(that.dcomp); // I hear them
-                }
-            } else {
-                console.log("skip me " + id);
             }
-
         });
-        this.peerout = myac.createMediaStreamDestination();
-        this.dcomp.connect(this.peerout);
-        var pc = this.pc;
-        var pstream = this.peerout.stream;
-
-        pstream.getTracks().forEach(track => {
-            pc.addTrack(track, pstream);
-            console.log("added panned outbound track ", track.id, track.kind, track.label);
-        });
-        if (mcu) {
-            mcu.getTracks().forEach(track => {
-                pc.addTrack(track, mcu);
-                if (track.kind === "video") {
-                    setCodecOrder(pc, track);
-                }
-                console.log("added mcu outbound track ", track.id, track.kind, track.label);
-            });
-        }
-        // audio together here.
-        // depends on role
-        console.log('Audio sample Rate is ' + myac.sampleRate);
         $("#chosenAction").show();
         $("#statsZone").show();
     }
     this.addVstream(stream, kind);
 };
 
-Session.prototype.calcAudioLevel = function(){
+Session.prototype.calcAudioLevel = function () {
+    if (this.analyserNode) {
         this.analyserNode.getFloatTimeDomainData(this.pcmData);
         let sumSquares = 0.0;
-        for (const amplitude of this.pcmData) { sumSquares += amplitude*amplitude; }
-        let na= Math.sqrt(sumSquares / this.pcmData.length);
-        this.audioLevel = (this.audioLevel /2) + na ;
+        for (const amplitude of this.pcmData) {
+            sumSquares += amplitude * amplitude;
+        }
+        let na = Math.sqrt(sumSquares / this.pcmData.length);
+        this.audioLevel = (this.audioLevel / 2) + na;
+    }
 };
 
 Session.prototype.getAudioLevel = function(){
