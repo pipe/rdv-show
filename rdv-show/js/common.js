@@ -11,9 +11,9 @@ function setAspectRatio() {
         console.log("attempting portrait constraint");
         if (window.orientation) {
             if ((window.orientation === -90) || (window.orientation === 90)) {
-                gumConstraints.video.aspectRatio = (9.0 / 16.0);
-            } else {
                 gumConstraints.video.aspectRatio = (16.0 / 9.0);
+            } else {
+                gumConstraints.video.aspectRatio = (9.0 / 16.0);
             }
         } else {
             gumConstraints.video.aspectRatio = (9.0 / 16.0);
