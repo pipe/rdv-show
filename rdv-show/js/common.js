@@ -5,22 +5,23 @@ var localStream;
 var mute = false;
 var peerConnectionOfferAnswerCriteria =  {offerToReceiveAudio: true, offerToReceiveVideo: true };
 var gumConstraints = {audio: true, video: { facingMode: "user" }};
-const supported = navigator.mediaDevices.getSupportedConstraints().aspectRatio;
-if (supported){
-    console.log("attempting portrait constraint");
-    if (window.orientation){
-        if ((window.orientation === -90) || (window.orientation === 90)) {
+function setAspectRatio() {
+    const supported = navigator.mediaDevices.getSupportedConstraints().aspectRatio;
+    if (supported) {
+        console.log("attempting portrait constraint");
+        if (window.orientation) {
+            if ((window.orientation === -90) || (window.orientation === 90)) {
+                gumConstraints.video.aspectRatio = (9.0 / 16.0);
+            } else {
+                gumConstraints.video.aspectRatio = (16.0 / 9.0);
+            }
+        } else {
             gumConstraints.video.aspectRatio = (9.0 / 16.0);
-        }else {
-            gumConstraints.video.aspectRatio = (16.0 / 9.0);
         }
     } else {
-        gumConstraints.video.aspectRatio = (9.0/16.0);
+        console.log("failed to set portrait constraint");
     }
-} else {
-    console.log("failed to set portrait constraint");
 }
-
 function isFacebookApp() {
     var ua = navigator.userAgent || navigator.vendor || window.opera;
     return (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf('Instagram') > -1) ;
@@ -197,6 +198,7 @@ $(document).ready(function () {
     } else {
         if (isWebrtcSupported()) {
             console.log("I see webRTC !");
+            setAspectRatio();
             $("#status").text("Waiting for server connection");
             startPipe();
             $("#mute").click(_ => setMute(!mute));
