@@ -22,7 +22,7 @@ async function startUX(){
     $("#share").modal('show');
     const me = document.getElementById("me");
     window.setInterval( ()=> {
-        var max =0.001;
+        var max =0.01;
         var selected = me;
 
         Object.entries(sessions).forEach(sessionkva => {
@@ -34,7 +34,6 @@ async function startUX(){
                 selected = video;
                 max = level;
             }
-            console.log("audio level is " +level+" "+video.id);
         });
         slideTo(selected);
     },500);
