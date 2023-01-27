@@ -19,6 +19,10 @@ async function startUX(){
     var remotes = document.getElementById("mcu");
     cropVideo = await CropTarget.fromElement(remotes);
     console.log("got crop Target");
+    var guesturl = document.getElementById("guestURL");
+    var url = window.location.href.replace("host.html","guest.html")+ "?id="+mid;
+    guesturl.innerText = url;
+
     $("#share").modal('show');
     const me = document.getElementById("me");
     window.setInterval( ()=> {

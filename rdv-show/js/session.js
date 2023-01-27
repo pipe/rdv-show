@@ -1,5 +1,5 @@
 
-var pots = [ {pan:-0.6,id:"them0"}, {pan:0.6, id:"them1"} ];
+var pots = [ {pan:-0.3,id:"them0"}, {pan:0.3, id:"them1"} ];
 
 function Session(id) {
     this.lastLoss = 0;
