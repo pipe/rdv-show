@@ -122,6 +122,11 @@ function setupAV() {
                         // not actually panned...
                     }
                 });
+                $("#devices").click(_ => {
+                        showDevices(document.getElementById("deviceList"),localStream,document.getElementById("me").srcObject,document.getElementById("them"));
+                        $("#deviceConfig").modal('show');
+                    }
+                );
                 resolve(false);
             })
             .catch((e) => {

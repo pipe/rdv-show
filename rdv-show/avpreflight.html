@@ -12,65 +12,41 @@
             font-weight: bold;
         }
     </style>
-    <title>RDV-Show (guest)</title>
+    <title>RDV-Show AV settings</title>
 </head>
 <body>
 <script src="js/popper.min.js"></script>
 <script src="js/bootstrap.js"></script>
 <script src="js/jquery-3.6.0.js"></script>
-<script src="js/host.js"></script>
-<script src="js/common.js"></script>
-<script src="js/session.js"></script>
 <script src="js/configureAV.js"></script>
-
+<script src="js/common.js"></script>
 <div class="card">
     <div class="card-header">
-        <a href="guest.html"><h1 id="title" >RDV-Show</h1></a>
-        <div id="chosenAction">
-            <button id="mute" type="button" class="btn btn-trans btn-lg"><i id="muteIcon" class="fa fa-microphone fa-2x" aria-hidden="true"></i></button>
-            <button id="stopCall" type="button" class="btn btn-trans btn-lg"><i id="stopIcon" class="fa fa-stop fa-2x" aria-hidden="true"></i></button>
-            <button id="devices" type="button" class="btn btn-trans btn-lg"><i id="deviceIcon" class="fa fa-gear  fa-2x" aria-hidden="true"></i></button>
-        </div>
+        <a href="host.html"><h1 id="title" >RDV-Show Configuartion</h1></a>
     </div>
     <div class="card-body">
         <div class="card" id="vscreen">
-            <div id="mcu" class="carousel slide carousel-fade"  data-bs-touch="false" data-bs-interval="false">
-                <div class="carousel-inner">
-                    <div class="carousel-item">
-                        <video id="them0"  playsinline autoplay muted class="d-block w-100" />
-                    </div>
-                    <div class="carousel-item active">
-                        <video id="me"  playsinline autoplay muted class="d-block w-100" />
-                    </div>
-                    <div class="carousel-item">
-                        <video id="them1"  playsinline autoplay muted class="d-block w-100" />
-                    </div>
-                </div>
+            <video class="card-img img-fluid" id="them" playsinline autoplay >
+            </video>
+            <div id="chosenAction" class="card-img-overlay">
+                <button id="devices" type="button" class="btn btn-trans btn-lg"><i id="deviceIcon" class="fa fa-gear  fa-2x" aria-hidden="true"></i></button>
             </div>
-
-        </div>
-        <div>Duration <span id="duration"></span></div>
-        <div>
-            <h2><span  id="role"></span></h2>
-            <h2><span  id="status"></span></h2>
         </div>
     </div>
 </div>
 
-<div id="share" class="modal" tabindex="-1" role="dialog">
+<div id="accept" class="modal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Send this url to the guest. </h5>
+                <h5 class="modal-title">Accept a call</h5>
             </div>
-            <div class="modal-body" id="shareQR">
-                <p id="guestURL"></p>
-                <p>Share this link with your guest(s)</p>
-                <p>Then come back to this screen and click the 'done' button.</p>
+            <div class="modal-body">
+                <p>Click 'accept' to start the call.</p>
                 <p>You'll also need to permit access to your camera and microphone</p>
             </div>
             <div class="modal-footer">
-                <button id="shareDone" type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="shared();">Done</button>
+                <button id="callAccept" type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="accepted();">Accept</button>
             </div>
         </div>
     </div>
@@ -128,8 +104,68 @@
 <footer><span>See our <a href="https://github.com/pipe/rdv-show">Github</a> for source code</span>
     <span>See also <a href="https://rendezvous.berlin/privacy-policy.html">Privacy</a>
        and <a href="https://pi.pe/Impressum/index.html">Impressum</a></span>
-    <span onclick="test()" >test</span>
-    <audio id="them"></audio>
 </footer>
 </body>
+<script>
+    function messageDeal(event){}
+    async function changeMe(ev){
+        let did = ev.target.getAttribute("did");
+        if (ev.target.classList.contains("audiooutput")){
+            if (!ev.target.classList.contains("inuse")) {
+                await document.getElementById("them").setSinkId(did);
+                populateDeviceList();
+            }
+        }
+        if (ev.target.classList.contains("audioinput")){
+            if (!ev.target.classList.contains("inuse")){
+                gumConstraints.audio = {"deviceId": did}
+                setupAV();
+            }
+        }
+        if (ev.target.classList.contains("videoinput")) {
+            if (!ev.target.classList.contains("inuse")){
+                gumConstraints.video.deviceId = did;
+                setupAV();
+            }
+        }
+    }
+    async function populateDeviceList(){
+        var dlist = document.getElementById("deviceList");
+        var me = document.getElementById("them");
+        await showDevices(dlist ,localStream,me.srcObject,me);
+        var list = dlist.getElementsByClassName("deviceChoice");
+        console.log("list is " + list.length)
+        for (let item of list) {
+            item.addEventListener("click",changeMe);
+        }
+    }
+    function setupAV() {
+        var promise = new Promise(function (resolve, reject) {
+            navigator.mediaDevices.getUserMedia(gumConstraints)
+                .then((stream) => {
+                    console.log("add local stream ");
+
+                    var them = document.getElementById("them");
+                    them.srcObject = stream;
+                    $("#them").show();
+                    localStream = stream;
+                    populateDeviceList();
+                    $("#devices").click( async function () {
+                        $("#deviceConfig").modal('show');
+                    });
+                    resolve(false);
+                })
+                .catch((e) => {
+                    console.log('getUserMedia() error:' + e);
+                    reject(e);
+                });
+        });
+        return promise;
+    }
+    function accepted() {
+        setupAV().then(_ => {
+
+        });
+    }
+</script>
 </html>
