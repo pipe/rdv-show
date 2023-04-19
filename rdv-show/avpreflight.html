@@ -167,5 +167,8 @@
 
         });
     }
+    navigator.mediaDevices.ondevicechange = (change) => {
+        populateDeviceList();
+    }
 </script>
 </html>
