@@ -4,7 +4,7 @@ var socket;
 var localStream;
 var mute = false;
 var peerConnectionOfferAnswerCriteria =  {offerToReceiveAudio: true, offerToReceiveVideo: true };
-var gumConstraints = {audio: true, video: { facingMode: "user" }};
+var gumConstraints = localStorage["GUM"] ? JSON.parse(localStorage["GUM"]):{audio: true, video: { facingMode: "user" }};
 function setAspectRatio() {
     const supported = navigator.mediaDevices.getSupportedConstraints().aspectRatio;
     if (supported) {

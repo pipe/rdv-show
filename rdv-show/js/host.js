@@ -8,9 +8,23 @@ var localpanned;
 var mcu;
 var cropVideo;
 var nmap = {them0:0,me:1,them1:2};
+var urltxt;
 
-
-
+function shareURL(){
+    let shareData = {
+        title:"Podcast guest invite",
+        text:"Please click this link to join our scheduled call.",
+        url:urltxt,
+    }
+    if (!navigator.canShare) {
+        console.log("navigator.canShare() not supported.");
+    } else if (navigator.canShare(shareData)) {
+        console.log("navigator.canShare() supported. We can use navigator.share() to send the data.");
+        navigator.share(shareData).catch( (err) =>{console.log("cant share because "+err)});
+    } else {
+        console.log("Specified data cannot be shared.");
+    }
+}
 async function startUX(){
     cid = mid;
     $("#role").text("Host");
@@ -19,10 +33,14 @@ async function startUX(){
     var remotes = document.getElementById("mcu");
     cropVideo = await CropTarget.fromElement(remotes);
     console.log("got crop Target");
-    var guesturl = document.getElementById("guestURL");
-    var url = window.location.href.replace("host.html","guest.html")+ "?id="+mid;
-    guesturl.innerText = url;
-
+    urltxt = window.location.href.replace("host.html","guest.html")+ "?id="+mid;
+    let p1 = document.getElementById("shareP1");
+    if (!navigator.canShare) {
+        console.log("navigator.canShare() not supported.");
+        p1.innerText = "Share this link with your guests. "+urltxt
+    } else {
+        p1.innerHTML = "Click <button onclick='shareURL()' id='shareURL' class='btn btn-danger'>Share</button> to send link to guests. "
+    }
     $("#share").modal('show');
     const me = document.getElementById("me");
     window.setInterval( ()=> {

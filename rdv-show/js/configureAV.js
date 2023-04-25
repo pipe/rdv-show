@@ -31,10 +31,3 @@ async function showDevices(div,as,vs,me){
     });
 }
 
-function startUX(){
-    $("#role").text("Guest");
-    $("#status").text("Waiting for connection");
-    $("#them").hide();
-    $("#accept").modal('show');
-    remoteStream = new MediaStream();
-}
