@@ -117,15 +117,19 @@ function messageDeal(event){
 }
 function setupAV() {
     myac = new AudioContext();
-
     localdcomp = myac.createDynamicsCompressor();
-    localdcomp.connect(myac.destination);
+    var dests = myac.createMediaStreamDestination();
+    localdcomp.connect(dests);
+    // set up play....
+    let thema = document.getElementById("them");
+    thema.srcObject = dests.stream;
     if (localStorage["sinkId"]){
-        myac.setSinkId(localStorage["sinkId"])
-            .then(() => {
-                console.log("Set sinkId ok");
-            })
-            .catch((err)=> {console.log("set sinkId failed "+err)});
+        thema.setSinkId(localStorage["sinkId"])
+            .then(() => { console.log("Set sinkId ok");})
+            .catch((err)=> {console.log("set sinkId failed "+err);})
+            .finally(() => { thema.play();});
+    } else {
+        thema.play();
     }
 
     var promise = new Promise(function (resolve, reject) {
@@ -144,7 +148,9 @@ function setupAV() {
                     }
                 });
                 $("#devices").click(_ => {
-                        showDevices(document.getElementById("deviceList"),localStream,document.getElementById("me").srcObject,myac);
+                        let target = document.getElementById("deviceList");
+                        let me = document.getElementById("me");
+                        showDevices(target,localStream,me.srcObject,thema);
                         $("#deviceConfig").modal('show');
                     }
                 );
