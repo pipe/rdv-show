@@ -114,7 +114,7 @@
 </body>
 <script>
     var oldGUM = gumConstraints;
-    var oldSinkId = localStorage["sinkId"];
+    var oldSinkId = localStorage["sinkId"] ;
     function messageDeal(event){}
     async function changeMe(ev){
         let did = ev.target.getAttribute("did");
@@ -152,6 +152,7 @@
             navigator.mediaDevices.getUserMedia(gumConstraints)
                 .then((stream) => {
                     console.log("add local stream ");
+                    localStream = stream;
                     var them = document.getElementById("them");
                     them.srcObject = stream;
                     if (localStorage["sinkId"]){
@@ -165,7 +166,6 @@
                         populateDeviceList();
                     }
                     $("#them").show();
-                    localStream = stream;
                     $("#devices").click(  function () {
                         oldGUM = gumConstraints;
                         oldSinkId = them.sinkId;
