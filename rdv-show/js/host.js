@@ -144,7 +144,7 @@ function setupAV() {
                     }
                 });
                 $("#devices").click(_ => {
-                        showDevices(document.getElementById("deviceList"),localStream,document.getElementById("me").srcObject,document.getElementById("me"));
+                        showDevices(document.getElementById("deviceList"),localStream,document.getElementById("me").srcObject,myac);
                         $("#deviceConfig").modal('show');
                     }
                 );
