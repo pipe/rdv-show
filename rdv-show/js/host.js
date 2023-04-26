@@ -119,19 +119,14 @@ function setupAV() {
     myac = new AudioContext();
 
     localdcomp = myac.createDynamicsCompressor();
-    var dests = myac.createMediaStreamDestination();
-    localdcomp.connect(dests);
-    var me = document.getElementById("me");
-    me.srcObject = dests.stream;
+    localdcomp.connect(myac.destination);
     if (localStorage["sinkId"]){
-        me.setSinkId(localStorage["sinkId"])
+        myac.setSinkId(localStorage["sinkId"])
             .then(() => {
                 console.log("Set sinkId ok");
             })
             .catch((err)=> {console.log("set sinkId failed "+err)});
     }
-    // set up play....
-    me.play();
 
     var promise = new Promise(function (resolve, reject) {
         navigator.mediaDevices.getUserMedia(gumConstraints)
