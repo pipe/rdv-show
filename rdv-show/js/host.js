@@ -121,9 +121,17 @@ function setupAV() {
     localdcomp = myac.createDynamicsCompressor();
     var dests = myac.createMediaStreamDestination();
     localdcomp.connect(dests);
+    var me = document.getElementById("me");
+    me.srcObject = dests.stream;
+    if (localStorage["sinkId"]){
+        me.setSinkId(localStorage["sinkId"])
+            .then(() => {
+                console.log("Set sinkId ok");
+            })
+            .catch((err)=> {console.log("set sinkId failed "+err)});
+    }
     // set up play....
-    document.getElementById("them").srcObject = dests.stream;
-    document.getElementById("them").play();
+    me.play();
 
     var promise = new Promise(function (resolve, reject) {
         navigator.mediaDevices.getUserMedia(gumConstraints)
@@ -141,7 +149,7 @@ function setupAV() {
                     }
                 });
                 $("#devices").click(_ => {
-                        showDevices(document.getElementById("deviceList"),localStream,document.getElementById("me").srcObject,document.getElementById("them"));
+                        showDevices(document.getElementById("deviceList"),localStream,document.getElementById("me").srcObject,document.getElementById("me"));
                         $("#deviceConfig").modal('show');
                     }
                 );

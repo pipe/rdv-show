@@ -114,6 +114,7 @@
 </body>
 <script>
     var oldGUM = gumConstraints;
+    var oldSinkId = localStorage["sinkId"];
     function messageDeal(event){}
     async function changeMe(ev){
         let did = ev.target.getAttribute("did");
@@ -151,14 +152,23 @@
             navigator.mediaDevices.getUserMedia(gumConstraints)
                 .then((stream) => {
                     console.log("add local stream ");
-
                     var them = document.getElementById("them");
                     them.srcObject = stream;
+                    if (localStorage["sinkId"]){
+                        them.setSinkId(localStorage["sinkId"])
+                            .then(() => {
+                                console.log("Set sinkId ok");
+                                populateDeviceList();
+                            })
+                            .catch((err)=> {console.log("set sinkid failed "+err)});
+                    } else {
+                        populateDeviceList();
+                    }
                     $("#them").show();
                     localStream = stream;
-                    populateDeviceList();
-                    $("#devices").click( async function () {
-                        oldGum = gumConstraints;
+                    $("#devices").click(  function () {
+                        oldGUM = gumConstraints;
+                        oldSinkId = them.sinkId;
                         $("#deviceConfig").modal('show');
                     });
                     resolve(false);
@@ -172,11 +182,14 @@
     }
     function accepted() {
         setupAV().then(_ => {
-            $("#devsave").click( async function () {
+            $("#devsave").click(  function () {
                 localStorage["GUM"] = JSON.stringify(gumConstraints);
+                localStorage["sinkId"] =document.getElementById("them").sinkId;
             });
-            $("#devcancel").click( async function () {
+            $("#devcancel").click(  function () {
                 gumConstraints = oldGUM;
+                localStorage["sinkId"] =oldSinkId;
+                setupAV();
             });
         });
     }
