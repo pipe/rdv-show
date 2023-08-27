@@ -1,6 +1,59 @@
 
-var pots = [ {pan:-0.3,id:"them0"}, {pan:0.3, id:"them1"} ];
+var pots = [ ];
+var emptypots = [];
+var sessions = {};
 
+
+//
+// default impl - do better ?
+var wrapVideo = (video) =>{
+    var parent =document.getElementById("videoHolder");
+    parent.appendChild(video);
+}
+function freshPot(){
+    // create a new 'pot' with the next name and a new angle
+    // the new angle is chosen by putting it in the middle of the biggest gap
+    var pot = {n:pots.length,pan:0.0,id:"unknown"};
+    pot.id = "video"+pot.n;
+    var a = -1.0;
+    var mdiff = 0.0;
+    var base = -1.0;
+    pots.sort((a,b) => {return a.pan -b.pan})
+    pots.forEach( (p) =>{
+        var diff = p.pan - a;
+        if (diff > mdiff){
+            mdiff = diff;
+            base = a;
+        }
+        a=p.pan;
+    });
+    var rdiff = 1.0-a;
+    if (rdiff > mdiff){
+        mdiff = rdiff;
+        base =a;
+    }
+    pot.pan = base + mdiff/2;
+    pots.push();
+    return pot;
+}
+function getSessionById(id){
+    return sessions[id];
+}
+function loudestSession(){
+    var selected = null;
+    var max =0.01;
+
+    Object.entries(sessions).forEach(sessionkva => {
+        var session  = sessionkva[1];
+        session.calcAudioLevel();
+        var level =  session.getAudioLevel();
+        if (level > max){
+            selected = session;
+            max = level;
+        }
+    });
+    return selected
+}
 function Session(id) {
     this.lastLoss = 0;
     this.lastRecv = 0;
@@ -11,13 +64,15 @@ function Session(id) {
     this.peerin = null;
     this.statusChannel = null;
     this.audio = null;
+    this.video = null;
     this.audioLevel = 0.0;
     this.lcandyStash = [];
     this.pot = null;
+    sessions[id] = this;
     console.log("created session for " + id);
 };
 Session.prototype.setMediaElement = function () {
-    this.pot =  pots.pop();
+    this.pot = emptypots.pop();
     if (this.pot) {
         this.pan = this.pot.pan;
     }
@@ -28,12 +83,15 @@ Session.prototype.setMediaElement = function () {
     console.log("pan is " + this.pan);
     if (this.pot) {
         this.video = document.getElementById(this.pot.id);
-        console.log("using carousel video id "+this.video.id);
+        console.log("using existing carousel video id "+this.video.id);
     } else {
         this.video = document.createElement("video");
         this.video.muted = true;
         this.video.setAttribute("autoplay", "true");
-        console.log("not using carousel video - making a fresh one ");
+        this.pot = freshPot();
+        this.video.id = this.pot.id;
+        wrapVideo(this.video);
+        console.log("not using prexisting video - making a fresh one ");
     }
 }
 Session.prototype.offerDeal = function (data) {
@@ -102,7 +160,7 @@ Session.prototype.stopSession = function () {
         this.panned = null;
     }
     if (this.pot) {
-        pots.push(this.pot);
+        emptypots.push(this.pot);
         this.pot = null;
     }
     try {
@@ -186,7 +244,7 @@ Session.prototype.setupRTC = function () {
                 if (this.pc.iceConnectionState != "connected") {
                     this.stopSession();
                 }
-            }, 5000);
+            }, 15000);
         }
     };
 

@@ -1,14 +1,12 @@
 var cid;
 var startRecTime;
-var sessions = {};
 var myac;
-var initiator;
 var localdcomp;
 var localpanned;
 var mcu;
 var cropVideo;
-var nmap = {them0:0,me:1,them1:2};
 var urltxt;
+var me;
 
 function shareURL(){
     let shareData = {
@@ -24,6 +22,7 @@ function shareURL(){
     } else {
         console.log("Specified data cannot be shared.");
     }
+    console.log("share url is "+urltxt);
 }
 async function startUX(){
     cid = mid;
@@ -42,22 +41,16 @@ async function startUX(){
         p1.innerHTML = "Click <button onclick='shareURL()' id='shareURL' class='btn btn-danger'>Share</button> to send link to guests. "
     }
     $("#share").modal('show');
-    const me = document.getElementById("me");
     window.setInterval( ()=> {
-        var max =0.01;
-        var selected = me;
-
-        Object.entries(sessions).forEach(sessionkva => {
-            var session  = sessionkva[1];
-            session.calcAudioLevel();
-            var level =  session.getAudioLevel();
-            var video = session.getVideo();
-            if (level > max){
-                selected = video;
-                max = level;
-            }
-        });
-        slideTo(selected);
+        var s= loudestSession();
+        var n=0 ; // me.
+        if (s){
+            n = s.pot.n;
+            console.log("selecting "+s.fid);
+        } else {
+            console.log("selecting me");
+        }
+        slideTo(n);
     },500);
 }
 
@@ -94,12 +87,11 @@ function messageDeal(event){
     if (data.to != mid){
         alert("message mixup");
     }
-    var session = sessions[data.from];
+    var session = getSessionById(data.from);
     switch (data.type) {
         case "offer":
             if (session == null) {
                 session = new Session(data.from);
-                sessions[data.from] = session;
             }
             session.offerDeal(data);
             break;
@@ -138,8 +130,19 @@ function setupAV() {
                 console.log("add local stream");
                 stream.getTracks().forEach(track => {
                     if (track.kind === "video") {
-                        var me = document.getElementById("me");
+                        var pot = {n:pots.length,pan:0.0,id:"me"};
+                        pots.push(pot);
+                        var me =  document.createElement("video");
+                        me.muted = true;
+                        me.setAttribute("autoplay", "true");
+                        me.setAttribute("playsinline","true");
+                        me.setAttribute("class","d-block w-100");
+                        me.setAttribute("id","me");
                         me.srcObject = stream;
+                        wrapVideo(me);
+                        var pc = me.parentElement.getAttribute("class");
+                        me.parentElement.setAttribute("class",pc+" active");
+
                     }
                     if (track.kind === "audio") {
                         localStream = stream;
@@ -163,12 +166,17 @@ function setupAV() {
     });
     return promise;
 }
-function slideTo(v){
-    if (v){
-        var slideNo = nmap[v.id];
-        $('#mcu').carousel(slideNo);
-        console.log("selecting "+v.id);
-    }
+function slideTo(n){
+    console.log("sliding to "+n);
+    $('#mcu').carousel(n);
+}
+wrapVideo = (video) =>{
+    var parent =document.getElementById("videoHolder");
+    var div = document.createElement("div");
+    div.setAttribute("class", "carousel-item");
+    video.setAttribute("class", "d-block w-100");
+    div.appendChild(video);
+    parent.appendChild(div);
 }
 
 

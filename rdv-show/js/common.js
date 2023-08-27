@@ -130,8 +130,12 @@ function setCodecOrder(pc,track){
                 console.log(v.mimeType);
             })
             const transceiver = pc.getTransceivers().find(t => t.sender && t.sender.track === track);
-            transceiver.setCodecPreferences(codecs);
-            console.log('Flipped  video codec');
+            if (transceiver.setCodecPreferences) {
+                transceiver.setCodecPreferences(codecs);
+                console.log('Flipped  video codec');
+            } else {
+                console.log('no codec ordering possible')
+            }
         } else {
             console.log('Default  video codecs');
         }

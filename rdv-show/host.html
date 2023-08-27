@@ -18,10 +18,10 @@
 <script src="js/popper.min.js"></script>
 <script src="js/bootstrap.js"></script>
 <script src="js/jquery-3.6.0.js"></script>
-<script src="js/host.js"></script>
 <script src="js/common.js"></script>
 <script src="js/session.js"></script>
 <script src="js/configureAV.js"></script>
+<script src="js/host.js"></script>
 
 <div class="card">
     <div class="card-header">
@@ -35,16 +35,7 @@
     <div class="card-body">
         <div class="card" id="vscreen">
             <div id="mcu" class="carousel slide carousel-fade"  data-bs-touch="false" data-bs-interval="false">
-                <div class="carousel-inner">
-                    <div class="carousel-item">
-                        <video id="them0"  playsinline autoplay muted class="d-block w-100" />
-                    </div>
-                    <div class="carousel-item active">
-                        <video id="me"  playsinline autoplay muted class="d-block w-100" />
-                    </div>
-                    <div class="carousel-item">
-                        <video id="them1"  playsinline autoplay muted class="d-block w-100" />
-                    </div>
+                <div id="videoHolder" class="carousel-inner">
                 </div>
             </div>
 
