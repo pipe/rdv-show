@@ -33,7 +33,7 @@ function freshPot(){
         base =a;
     }
     pot.pan = base + mdiff/2;
-    pots.push();
+    pots.push(pot);
     return pot;
 }
 function getSessionById(id){
@@ -74,15 +74,7 @@ function Session(id) {
 Session.prototype.setMediaElement = function () {
     this.pot = emptypots.pop();
     if (this.pot) {
-        this.pan = this.pot.pan;
-    }
-    if (!this.pan) {
-        console.log("pan audio to center ...");
-        this.pan = 0.0;
-    }
-    console.log("pan is " + this.pan);
-    if (this.pot) {
-        this.video = document.getElementById(this.pot.id);
+        this.video = document.getElementById(this.video.id);
         console.log("using existing carousel video id "+this.video.id);
     } else {
         this.video = document.createElement("video");
@@ -91,8 +83,16 @@ Session.prototype.setMediaElement = function () {
         this.pot = freshPot();
         this.video.id = this.pot.id;
         wrapVideo(this.video);
-        console.log("not using prexisting video - making a fresh one ");
+        console.log("not using prexisting video - making a fresh one "+this.pot.id);
     }
+    if (this.pot) {
+        this.pan = this.pot.pan;
+    }
+    if (!this.pan) {
+        console.log("pan audio to center ...");
+        this.pan = 0.0;
+    }
+    console.log("pan is " + this.pan);
 }
 Session.prototype.offerDeal = function (data) {
     this.setupRTC();

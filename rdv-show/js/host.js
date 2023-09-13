@@ -7,6 +7,7 @@ var mcu;
 var cropVideo;
 var urltxt;
 var me;
+var lastn = -1;
 
 function shareURL(){
     let shareData = {
@@ -46,11 +47,16 @@ async function startUX(){
         var n=0 ; // me.
         if (s){
             n = s.pot.n;
-            console.log("selecting "+s.fid);
-        } else {
-            console.log("selecting me");
         }
-        slideTo(n);
+        if ( n != lastn) {
+            if (n != 0) {
+                console.log("selecting " + s.fid + " at " + s.pot.n);
+            } else {
+                console.log("selecting me");
+            }
+            slideTo(n);
+            lastn = n;
+        }
     },500);
 }
 
