@@ -33,18 +33,19 @@ function setupAV() {
         navigator.mediaDevices.getUserMedia(gumConstraints)
             .then((stream) => {
                 console.log("add local stream ");
-                stream.getTracks().forEach(track => {
-                    var them = document.getElementById("them");
-                    them.srcObject = stream;
-                    pc.addTrack(track, stream);
+                var them = document.getElementById("them");
+                them.srcObject = stream;
+                for (const track of stream.getTracks()) {
+                        //You could add simulcast too here
+                        if (track.kind === 'video') {
+                            pc.addTrack(track);
+                            $("#them").show();
+                        } else {
+                            pc.addTrack(track);
+                            localStream = stream; // for mute
+                        }
                     console.log("added local track ", track.id, track.kind);
-                    if (track.kind === "video") {
-                        setCodecOrder(pc, track);
-                        $("#them").show();
-                    } else {
-                        localStream = stream; // for mute
-                    }
-                });
+                };
                 resolve(false);
             })
             .catch((e) => {
@@ -124,7 +125,8 @@ function setupRTC(){
 
 function messageDeal(event){
     //console.log("message is ", event.data);
-    var data = JSON.parse(event.data);
+    const lines = event.data.split("\n");
+    var data = JSON.parse(lines[0]);
     console.log("message data is ", data);
     if (data.to != mid){
         alert("message mixup");

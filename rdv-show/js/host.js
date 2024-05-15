@@ -76,6 +76,10 @@ async function setupMCU() {
     }
     var act = document.getElementById("stopCall");
     act.onclick =  stopCall;
+    var castb = document.getElementById("cast");
+    castb.addEventListener("click", castMe)
+    $('#cast').removeClass("disabled");
+    populateSettings();
     window.onbeforeunload = function() {
         return  "If you leave this page you will end the call.";
     }
@@ -89,7 +93,8 @@ async function shared() {
 
 function messageDeal(event){
     //console.log("message is ", event.data);
-    var data = JSON.parse(event.data);
+    const lines = event.data.split("\n");
+    var data = JSON.parse(lines[0]);
     console.log("message data is ", data);
     if (data.to != mid){
         alert("message mixup");

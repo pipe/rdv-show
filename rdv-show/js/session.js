@@ -250,11 +250,12 @@ Session.prototype.setOutboundTracks = function () {
     // and video
     if (mcu) {
         mcu.getTracks().forEach(track => {
-            pc.addTrack(track, mcu);
-            if (track.kind === "video") {
-                setCodecOrder(pc, track);
+            if (track.kind === 'video') {
+                pc.addTrack(track);
+                console.log("added mcu outbound track ", track.id, track.kind, track.label);
+            } else {
+                console.log ("Non muc track not added ?!?"+track.kind)
             }
-            console.log("added mcu outbound track ", track.id, track.kind, track.label);
         });
     }
 
