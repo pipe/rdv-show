@@ -1,7 +1,7 @@
 var cid;
 var startRecTime;
 var myac;
-var localdcomp;
+var localdcomp = null;
 var localpanned;
 var mcu;
 var cropVideo;
@@ -75,6 +75,10 @@ async function setupMCU() {
     }
     var act = document.getElementById("stopCall");
     act.onclick =  stopCall;
+    var castb = document.getElementById("cast");
+    castb.addEventListener("click", castMe)
+    $('#cast').removeClass("disabled");
+    populateSettings();
     window.onbeforeunload = function() {
         return  "If you leave this page you will end the call.";
     }
@@ -88,7 +92,8 @@ async function shared() {
 
 function messageDeal(event){
     //console.log("message is ", event.data);
-    var data = JSON.parse(event.data);
+    const lines = event.data.split("\n");
+    var data = JSON.parse(lines[0]);
     console.log("message data is ", data);
     if (data.to != mid){
         alert("message mixup");
@@ -113,13 +118,25 @@ function messageDeal(event){
             break;
     }
 }
+function playThem(){
+    let thema = document.getElementById("them");
+    if (localStorage["sinkId"]){
+        thema.setSinkId(localStorage["sinkId"])
+            .then(() => { console.log("Set sinkId ok");})
+            .catch((err)=> {console.log("set sinkId failed "+err);})
+            .finally(() => { thema.play();});
+    } else {
+        thema.play();
+    }
+}
 function setupAV() {
+    let thema = document.getElementById("them");
+
     myac = new AudioContext();
     localdcomp = myac.createDynamicsCompressor();
     var dests = myac.createMediaStreamDestination();
     localdcomp.connect(dests);
     // set up play....
-    let thema = document.getElementById("them");
     thema.srcObject = dests.stream;
     if (localStorage["sinkId"]){
         thema.setSinkId(localStorage["sinkId"])

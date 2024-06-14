@@ -117,28 +117,24 @@ function tweakOpus(send) {
         }
 
 }
-function setCodecOrder(pc,track){
-        if (RTCRtpSender.getCapabilities) {
-            const {codecs} = RTCRtpSender.getCapabilities('video');
-            console.log("default video codecs ");
-            codecs.forEach((v) => {
-                console.log(v.mimeType);
-            })
-            codecs.sort((a, b) => codecPriority(a.mimeType) - codecPriority(b.mimeType));
-            console.log("ordered video codecs ")
-            codecs.forEach((v) => {
-                console.log(v.mimeType);
-            })
-            const transceiver = pc.getTransceivers().find(t => t.sender && t.sender.track === track);
-            if (transceiver.setCodecPreferences) {
-                transceiver.setCodecPreferences(codecs);
-                console.log('Flipped  video codec');
-            } else {
-                console.log('no codec ordering possible')
-            }
-        } else {
-            console.log('Default  video codecs');
-        }
+
+function setCodecOrder(trans){
+    if (RTCRtpSender.getCapabilities) {
+        var codecs = RTCRtpSender.getCapabilities("video").codecs;
+        console.log("default video codecs ");
+        codecs.forEach((v) => {
+            console.log(v.mimeType);
+        })
+        //codecs.sort((a, b) => codecPriority(a.mimeType) - codecPriority(b.mimeType));
+        console.log("ordered video codecs ")
+        codecs.forEach((v) => {
+            console.log(v.mimeType);
+        })
+        trans.setCodecPreferences(codecs);
+        console.log('Flipped  video codec');
+    } else {
+        console.log('Default  video codecs');
+    }
 }
 function loadProps() {
     var that = {configUrl: "pipeconfig.json"};

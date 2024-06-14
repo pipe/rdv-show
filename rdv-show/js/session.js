@@ -250,6 +250,10 @@ Session.prototype.setupRTC = function () {
 
     this.pc.ontrack = (event) => {
         var stream = event.streams[0];
+        if (!stream){
+            stream = new MediaStream();
+            stream.addTrack(event.track);
+        }
         console.log("got remote track ", event.track.kind);
         this.addRemoteStream(stream, event.track.kind);
     };
@@ -308,11 +312,12 @@ Session.prototype.setOutboundTracks = function () {
     // and video
     if (mcu) {
         mcu.getTracks().forEach(track => {
-            pc.addTrack(track, mcu);
-            if (track.kind === "video") {
-                setCodecOrder(pc, track);
+            if (track.kind === 'video') {
+                pc.addTrack(track);
+                console.log("added mcu outbound track ", track.id, track.kind, track.label);
+            } else {
+                console.log ("Non muc track not added ?!?"+track.kind)
             }
-            console.log("added mcu outbound track ", track.id, track.kind, track.label);
         });
     }
 
@@ -349,8 +354,10 @@ Session.prototype.addRemoteStream = function (stream, kind) {
         // plug the panned output into our dcomp so we get the stereo effect as host.
         if (localdcomp != null) {
             this.panned.connect(localdcomp);
-        } else {
-            console.log("nowhere to plug " + this.fid);
+        //} else {
+            let dummy = document.getElementById("dummy");
+            dummy.srcObject = stream;
+            console.log("setting this as audio output " + this.fid);
         }
 
         var that = this;
@@ -365,8 +372,9 @@ Session.prototype.addRemoteStream = function (stream, kind) {
         });
         $("#chosenAction").show();
         $("#statsZone").show();
+    } else {
+        this.addVstream(stream, kind);
     }
-    this.addVstream(stream, kind);
 };
 
 Session.prototype.calcAudioLevel = function () {
