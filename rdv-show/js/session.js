@@ -392,9 +392,7 @@ Session.prototype.calcAudioLevel = function () {
         if (rec.getSynchronizationSources().length == 1){
             var na = rec.getSynchronizationSources()[0].audioLevel;
             this.audioLevel = (this.audioLevel / 2) + na;
-        } else {
-            console.log("Many sources ?!?")
-        }
+        } 
     }
 };
 
