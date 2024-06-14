@@ -296,8 +296,10 @@ Session.prototype.addRemoteStream = function (stream, kind) {
         // plug the panned output into our dcomp so we get the stereo effect as host.
         if (localdcomp != null) {
             this.panned.connect(localdcomp);
-        } else {
-            console.log("nowhere to plug " + this.fid);
+        //} else {
+            let dummy = document.getElementById("dummy");
+            dummy.srcObject = stream;
+            console.log("setting this as audio output " + this.fid);
         }
 
         var that = this;

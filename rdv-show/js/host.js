@@ -3,7 +3,7 @@ var startRecTime;
 var sessions = {};
 var myac;
 var initiator;
-var localdcomp;
+var localdcomp = null;
 var localpanned;
 var mcu;
 var cropVideo;
@@ -120,14 +120,26 @@ function messageDeal(event){
             break;
     }
 }
+function playThem(){
+    let thema = document.getElementById("them");
+    if (localStorage["sinkId"]){
+        thema.setSinkId(localStorage["sinkId"])
+            .then(() => { console.log("Set sinkId ok");})
+            .catch((err)=> {console.log("set sinkId failed "+err);})
+            .finally(() => { thema.play();});
+    } else {
+        thema.play();
+    }
+}
 function setupAV() {
+    let thema = document.getElementById("them");
+
     myac = new AudioContext();
     localdcomp = myac.createDynamicsCompressor();
     var dests = myac.createMediaStreamDestination();
     localdcomp.connect(dests);
     // set up play....
-    let thema = document.getElementById("them");
-   // thema.srcObject = dests.stream;
+    thema.srcObject = dests.stream;
     if (localStorage["sinkId"]){
         thema.setSinkId(localStorage["sinkId"])
             .then(() => { console.log("Set sinkId ok");})
