@@ -192,6 +192,10 @@ Session.prototype.setupRTC = function () {
 
     this.pc.ontrack = (event) => {
         var stream = event.streams[0];
+        if (!stream){
+            stream = new MediaStream();
+            stream.addTrack(event.track);
+        }
         console.log("got remote track ", event.track.kind);
         this.addRemoteStream(stream, event.track.kind);
     };
@@ -308,8 +312,9 @@ Session.prototype.addRemoteStream = function (stream, kind) {
         });
         $("#chosenAction").show();
         $("#statsZone").show();
+    } else {
+        this.addVstream(stream, kind);
     }
-    this.addVstream(stream, kind);
 };
 
 Session.prototype.calcAudioLevel = function () {

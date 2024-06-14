@@ -127,7 +127,7 @@ function setupAV() {
     localdcomp.connect(dests);
     // set up play....
     let thema = document.getElementById("them");
-    thema.srcObject = dests.stream;
+   // thema.srcObject = dests.stream;
     if (localStorage["sinkId"]){
         thema.setSinkId(localStorage["sinkId"])
             .then(() => { console.log("Set sinkId ok");})
