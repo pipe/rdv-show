@@ -9,14 +9,19 @@ function setAspectRatio() {
     const supported = navigator.mediaDevices.getSupportedConstraints().aspectRatio;
     if (supported) {
         console.log("attempting portrait constraint");
-        if (window.orientation) {
-            if ((window.orientation === -90) || (window.orientation === 90)) {
-                gumConstraints.video.aspectRatio = (16.0 / 9.0);
-            } else {
-                gumConstraints.video.aspectRatio = (9.0 / 16.0);
+
+        if (window.screen.orientation) {
+            var oType = window.screen.orientation.type;
+            switch (oType){
+                case "portrait-primary":
+                case "portrait-secondary":
+                    gumConstraints.video.aspectRatio = (16.0 / 9.0);
+                    break;
+                case "landscape-secondary":
+                case "landscape-primary":
+                    gumConstraints.video.aspectRatio = (9.0 / 16.0);
+                    break;
             }
-        } else {
-            gumConstraints.video.aspectRatio = (9.0 / 16.0);
         }
     } else {
         console.log("failed to set portrait constraint");
