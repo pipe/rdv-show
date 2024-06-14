@@ -125,4 +125,17 @@ async function castMe() {
         }
     }
     });
+    function saveSettings(){
+        var whipURL = document.getElementById("whipURL").value;
+        var token = document.getElementById("whipToken").value;
+        var bitrate = document.getElementById("whipBitrate").value;
+        var viewURL = document.getElementById("viewURL").value;
+
+        whipSettings[deviceId] = { whipURL: whipURL , bitrate:bitrate, token:token , viewURL:viewURL };
+        localStorage.whipSettings = JSON.stringify(whipSettings);
+        $("#whipDialog").modal('hide');
+    }
+    function cancelSettings() {
+        $("#whipDialog").modal('hide');
+    }
 }

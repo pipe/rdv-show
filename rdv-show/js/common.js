@@ -118,6 +118,22 @@ function tweakOpus(send) {
 
 }
 
+function tweakBitrate(sender) {
+    const paras = sender.getParameters();
+    console.log("initial video encoder params");
+    console.log(paras);
+    if ((paras) && (paras.encodings)) {
+        if (paras.encodings.length == 0) {
+            paras.encodings.push({});
+        }
+        paras.encodings[0].maxBitrate = 1000000;
+        //paras.degradationPreference = "maintain-framerate";
+        sender.setParameters(paras).then(() => {
+            console.log(paras);
+        });
+    }
+
+}
 function setCodecOrder(trans){
     if (RTCRtpSender.getCapabilities) {
         var codecs = RTCRtpSender.getCapabilities("video").codecs;

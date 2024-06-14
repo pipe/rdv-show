@@ -73,7 +73,7 @@ function Session(id) {
 };
 Session.prototype.setMediaElement = function () {
     this.pot = emptypots.pop();
-    if (this.pot) {
+    if ((this.pot) && (this.video) && (this.video.id)) {
         this.video = document.getElementById(this.video.id);
         console.log("using existing carousel video id "+this.video.id);
     } else {
@@ -216,10 +216,17 @@ Session.prototype.setupRTC = function () {
         console.log("ice state is changed", this.pc.iceConnectionState);
         if (this.pc.iceConnectionState === "connected") {
             console.log(this.pc.getTransceivers());
-            var sendtr = this.pc.getTransceivers().find((tr) => tr && tr.sender && tr.sender.track && tr.sender.track.kind === "audio");
-            if (sendtr) {
-                tweakOpus(sendtr.sender);
-            }
+            this.pc.getTransceivers().forEach((tr) => {
+                if (tr && tr.sender && tr.sender.track) {
+                    if (tr.sender.track.kind === "audio") {
+                        tweakOpus(tr.sender);
+                    }
+                    if (tr.sender.track.kind === "video") {
+                        tweakBitrate(tr.sender);
+                    }
+                }
+            });
+
         }
         /*
          "new"	The ICE agent is gathering addresses or is waiting to be given remote candidates through calls to RTCPeerConnection.addIceCandidate() (or both).
@@ -277,6 +284,7 @@ Session.prototype.setupRTC = function () {
         }
     };
 };
+
 Session.prototype.setOutboundTracks = function () {
     // audio
     // outbound
@@ -313,7 +321,7 @@ Session.prototype.setOutboundTracks = function () {
     if (mcu) {
         mcu.getTracks().forEach(track => {
             if (track.kind === 'video') {
-                pc.addTrack(track);
+                var sender = pc.addTrack(track);
                 console.log("added mcu outbound track ", track.id, track.kind, track.label);
             } else {
                 console.log ("Non muc track not added ?!?"+track.kind)

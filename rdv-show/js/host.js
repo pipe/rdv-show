@@ -30,7 +30,7 @@ async function startUX(){
     $("#role").text("Host");
     $("#status").text("Connected");
     document.getElementById("shareDone").onclick = shared;
-    var remotes = document.getElementById("mcu");
+    var remotes = document.getElementById("vscreen");
     cropVideo = await CropTarget.fromElement(remotes);
     console.log("got crop Target");
     urltxt = window.location.href.replace("host.html","guest.html")+ "?id="+mid;
@@ -77,8 +77,21 @@ async function setupMCU() {
     act.onclick =  stopCall;
     var castb = document.getElementById("cast");
     castb.addEventListener("click", castMe)
+
+    $("#setSave").click(  function () {
+        saveSettings();
+    });
+    $("#setCancel").click(  function () {
+        cancelSettings();
+    });
     $('#cast').removeClass("disabled");
+
     populateSettings();
+    var whipSettings = document.getElementById("whipSettings");
+    whipSettings.onclick = (e) => {
+        populateSettings();
+        $("#whipDialog").modal('show');
+    }
     window.onbeforeunload = function() {
         return  "If you leave this page you will end the call.";
     }
