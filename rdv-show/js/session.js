@@ -346,9 +346,9 @@ Session.prototype.addRemoteStream = function (stream, kind) {
         // inbound....
         this.peerin = myac.createMediaStreamSource(stream);
         // volume measurement
-        this.analyserNode = myac.createAnalyser();
+        /*this.analyserNode = myac.createAnalyser();
         this.peerin.connect(this.analyserNode);
-        this.pcmData = new Float32Array(this.analyserNode.fftSize);
+        this.pcmData = new Float32Array(this.analyserNode.fftSize);*/
 
 
         this.panned = myac.createStereoPanner();
@@ -386,14 +386,15 @@ Session.prototype.addRemoteStream = function (stream, kind) {
 };
 
 Session.prototype.calcAudioLevel = function () {
-    if (this.analyserNode) {
-        this.analyserNode.getFloatTimeDomainData(this.pcmData);
-        let sumSquares = 0.0;
-        for (const amplitude of this.pcmData) {
-            sumSquares += amplitude * amplitude;
+    var rec = this.pc.getReceivers().find((r) => r.track.kind === 'audio');
+    if (rec){
+        var na = 0.0;
+        if (rec.getSynchronizationSources().length == 1){
+            var na = rec.getSynchronizationSources()[0].audioLevel;
+            this.audioLevel = (this.audioLevel / 2) + na;
+        } else {
+            console.log("Many sources ?!?")
         }
-        let na = Math.sqrt(sumSquares / this.pcmData.length);
-        this.audioLevel = (this.audioLevel / 2) + na;
     }
 };
 
